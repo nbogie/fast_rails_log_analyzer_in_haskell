@@ -1,0 +1,16 @@
+output
+inputs/sensitive
+*.swp
+profilings/*.hp
+profilings/*.ps
+*.o
+*.hi
+*.hp
+*.ps
+*.aux
+*.prof
+Main
+
+doc
+bin
+tmp

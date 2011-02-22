@@ -1,0 +1,1 @@
+Dec 25 06:56:51 app5 rails[13427]: INFO: Parameters: {"action"=>"index", "controller"=>"foo", "query"=>"bar:Temp(°C)"}

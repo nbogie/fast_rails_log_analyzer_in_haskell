@@ -1,0 +1,10 @@
+Feb 10 06:53:40 host1 example_rails[28275]: local3.info<158>: Processing NinjasController#update to csv (for 111.111.111.111 at 2011-02-10 06:53:40) [PUT] X-UniqueRequestId: foo1
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Completed in 38ms (View: 1, DB: 14) | 200 OK [http://api.example.com/ninjas/hattori.csv?_method=put]
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Processing WeaponsController#update (for 111.111.111.111 at 2011-02-10 06:53:41) [PUT] X-UniqueRequestId: foo2
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Completed in 27ms (View: 1, DB: 7) | 200 OK [http://www.example.com/ninjas/hattori/weapons/1?_method=put]
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Processing NinjasController#update to csv (for 111.111.111.111 at 2011-02-10 06:53:41) [PUT] X-UniqueRequestId: foo3
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Completed in 11ms (View: 1, DB: 2) | 200 OK [http://example.com/ninjas/momochi.csv]
+Feb 10 06:53:41 host1 example_rails[28297]: local3.info<158>: Processing WeaponsController#create (for 111.111.111.111 at 2011-02-10 06:53:41) [POST] X-UniqueRequestId: foo4
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Processing NinjasController#update to csv (for 111.111.111.111 at 2011-02-10 06:53:41) [PUT] X-UniqueRequestId: foo5
+Feb 10 06:53:41 host1 example_rails[28275]: local3.info<158>: Completed in 21ms (View: 1, DB: 14) | 200 OK [http://www.example.com/ninjas/fuma.csv]
+Feb 10 06:53:42 host1 example_rails[28297]: local3.info<158>: Processing NinjasController#update to csv (for 111.111.111.111 at 2011-02-10 06:53:42) [PUT] X-UniqueRequestId: foo6

@@ -1,0 +1,27 @@
+module Types where
+
+import qualified Data.ByteString.Lazy.Char8 as C
+
+-- some protection against possible changes of string impl
+type SomeString = C.ByteString
+
+type Pid = Int
+
+type Action = (SomeString, Maybe Format)
+showAction (a, Just fmt) = C.unpack a ++ "."++C.unpack fmt
+showAction (a, Nothing) = C.unpack a
+
+type Format = SomeString -- format is json, csv, xml, etc.
+type Duration = Int
+type Timestamp = SomeString -- we currently don't need to parse these.
+type Hostname = SomeString
+type Severity = SomeString
+
+-- in the log an action may start or end, on a given pid.
+data LogEvent = Start Timestamp Pid Action
+                | End Timestamp Pid Duration 
+
+instance Show LogEvent where
+  show (Start t p a) = "<<Start at " ++ C.unpack t ++ ", pid: "++ show p ++ ", action: "++showAction a ++ ">>"
+  show (End t p d) = "<<End at " ++ C.unpack t ++ ", pid: "++ show p ++ ", duration: "++show d ++ ">>"
+
