@@ -1,4 +1,8 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Main where
+
+import Text.JSON (encode)
+import Text.JSON.Generic (toJSON)
 
 import Text.Printf (printf)
 import Data.List (foldl')
@@ -6,9 +10,18 @@ import Data.Maybe (mapMaybe)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.Char8 as C
 
+import System.Console.CmdArgs (cmdArgs, cmdArgsMode, cmdArgsRun, (&=), summary, help)
+-- provide reflection needed for cmdArgs
+import Data.Typeable
+import Data.Data
+
 import Types
 import Parser
 import Stats (Stats, updateStats, newStats, statsToS)
+
+-- types for command-line args
+data Prog = Prog { outputFormat :: OutputFormat } deriving (Data, Typeable, Show)
+data OutputFormat = JSON | Plain deriving (Data, Typeable, Show, Eq)
 
 -- a rails event reconstituted from a start and end LogEvent
 data RailsEvent = RailsEvent Action Duration Pid Timestamp Timestamp deriving (Show)
@@ -16,15 +29,23 @@ data RailsEvent = RailsEvent Action Duration Pid Timestamp Timestamp deriving (S
 type PidMap = M.Map Pid LogEvent
 type StatMap = M.Map Action Stats
 
+-- set up cmd-line arg parsing, defaults, help
+optsConfig = cmdArgsMode $ Prog { outputFormat = Plain 
+                &= help "Output format: JSON or Plain" } 
+              &= summary "Fast Rails Log Analyzer.  Parses from stdin."
+
 main :: IO ()
-main = do content <- C.getContents
+main = do opts <- cmdArgsRun optsConfig
+          content <- C.getContents
           let ls = C.lines content
           let (_tallyMap, statsMap) = foldl' tally tally0 $ logEvents ls
-          presentActions statsMap
+          let present = if (outputFormat opts==JSON) then presentActionsAsJSON else presentActions
+          present statsMap
           return ()
             where tally0 :: (PidMap, StatMap)
                   tally0 = (M.empty, M.empty)
                   logEvents = mapMaybe parseLogEvent
+
 
 tally :: (PidMap, StatMap) -> LogEvent -> (PidMap, StatMap)
 
@@ -63,3 +84,8 @@ presentActions smap = putStrLn $ unlines $ header:body
                header = printf "%-50s %-10s %10s %10s %10s %10s %10s" "Render Times Summary:" "Format" "Count" "Avg" "Std Dev" "Min" "Max" 
                body = map putIt (M.assocs smap)
                putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
+
+-- Note: Json will be missing stddev, as it just reflects Stats which doesn't carry it
+presentActionsAsJSON :: StatMap -> IO ()
+presentActionsAsJSON smap = putStrLn $ encode $ toJSON (M.assocs smap)
+

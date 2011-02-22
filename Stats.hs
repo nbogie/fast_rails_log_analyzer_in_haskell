@@ -1,7 +1,11 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 module Stats where
 
 import Types
 import Text.Printf (printf)
+-- for translation to json
+import Data.Typeable
+import Data.Data
 
 data Stats = Stats {   minDur :: !Duration -- ^ Minimum duration seen
                    , maxDur :: !Duration -- ^ Maximum duration seen
@@ -10,7 +14,7 @@ data Stats = Stats {   minDur :: !Duration -- ^ Minimum duration seen
                                                  -- (This allows us to calculate stddev at end, 
                                                  --  without second pass)
                    , totalDur :: !Int -- ^ Sum of duration of all occurrences
-                 }
+                 } deriving (Eq, Typeable, Data)
 
 instance Show Stats where
   show s = "min: " ++ show (minDur s)

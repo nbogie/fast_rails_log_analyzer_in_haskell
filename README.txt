@@ -34,9 +34,12 @@ ghc --make -fforce-recomp -O2 Main.hs
 # process compressed log file: 
 zcat myhugerailslogfile.log.gz | ./Main > report
 
+# output to json instead of plain text (exact format liable to change)
+./Main -o json < myhugerailslogfile.log > report
+
 TODO: 
 =====
- * Provide json output
+ * Finish json output (better json structure, add stddev)
 
  * Handle input reliably from multiple hosts
 Currently, only pids are tracked, and this will work reliably on a log file 
@@ -53,7 +56,8 @@ to be copied from the lazy bytestring, anyway.
 
  * Allow collection of information about unparseable lines.
 
- * parallelize.  It's difficult to find suitable split points in the log file.
+ * Parallelize.  It's difficult to find suitable split points in the log file.
 There must be no request in progress at the split point, unless we want to have 
 to reconcile unmatched pairs at the reduce stage.
 
+ * Make into a cabal package (not necessarily publishing to hackage, though)
