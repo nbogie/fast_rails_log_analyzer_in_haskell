@@ -24,7 +24,8 @@ extractCoreWithRead :: SomeString -> Maybe (Timestamp, Hostname, Pid, SomeString
 extractCoreWithRead input = 
       let timestamp=C.take timestampWidth input
           (hostname:pidPlus:_severity:firstWord:_rest) = C.words (C.drop (timestampWidth+1) input)
-          (pidStr, _afterPid)  = (C.break (== ']') (C.drop 14 pidPlus))
+          -- (pidStr, _afterPid)  = (C.break (== ']') (C.drop 14 pidPlus)) -- don't hardcode the length of the rails process
+          (pidStr, _afterPid) = C.break (==']') $ C.drop 1 $ snd $ C.break (=='[') pidPlus -- yuck FIXME
       in case C.readInt pidStr of
            Just (pid, _) -> Just (C.copy timestamp, C.copy hostname, pid, firstWord)
            Nothing -> Nothing
