@@ -1,6 +1,6 @@
 Build-type:     Simple
 Name:           rails-log-analyzer-hs
-Version:        0.0.3
+Version:        0.0.4
 Synopsis:       simple rails log analyzer akin to pl_analyze
 Homepage:       https://github.com/nbogie/fast_rails_log_analyzer_in_haskell
 Category:       Rails
