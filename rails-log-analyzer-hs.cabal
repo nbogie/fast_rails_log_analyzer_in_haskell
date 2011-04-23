@@ -18,5 +18,5 @@ Build-depends:
   cmdargs == 0.6.*,
   containers == 0.3.0.0,
   json == 0.4.4
-Main-Is: Main.hs
+Main-Is: RLA/Main.hs
 GHC-Options: -O2

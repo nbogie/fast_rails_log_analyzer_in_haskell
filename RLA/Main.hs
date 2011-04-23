@@ -15,9 +15,9 @@ import System.Console.CmdArgs (cmdArgs, cmdArgsMode, cmdArgsRun, (&=), summary, 
 import Data.Typeable
 import Data.Data
 
-import Types
-import Parser
-import Stats (Stats, updateStats, newStats, statsToS)
+import RLA.Types
+import RLA.Parser
+import RLA.Stats (Stats, updateStats, newStats, statsToS)
 
 -- types for command-line args
 data Prog = Prog { outputFormat :: OutputFormat } deriving (Data, Typeable, Show)

@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-module Stats where
+module RLA.Stats where
 
-import Types
+import RLA.Types
+
 import Text.Printf (printf)
 -- for translation to json
 import Data.Typeable

@@ -1,4 +1,4 @@
-module Types where
+module RLA.Types where
 
 import qualified Data.ByteString.Lazy.Char8 as C
 

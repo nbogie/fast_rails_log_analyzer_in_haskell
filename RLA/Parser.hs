@@ -1,4 +1,4 @@
-module Parser 
+module RLA.Parser 
   (
     extractCore
   , extractAction
@@ -13,7 +13,7 @@ import Text.Regex.Posix
 -- import Data.Time.Parse
 -- import Data.Time.LocalTime
 
-import Types
+import RLA.Types
 
 -- we may change this to extractCoreWithParsec, or other impl
 extractCore = extractCoreWithRead

@@ -1,8 +1,8 @@
-module Testing where
+module RLA.Testing where
 
-import Parser
-import Types
-import Utils
+import RLA.Parser
+import RLA.Types
+import RLA.Utils
 
 import Data.Maybe (mapMaybe)
 import qualified Data.ByteString.Lazy.Char8 as C
