@@ -34,17 +34,21 @@ optsConfig = cmdArgsMode $ Prog { outputFormat = Plain
                 &= help "Output format: JSON or Plain" } 
               &= summary "Fast Rails Log Analyzer.  Parses from stdin."
 
+makeStats :: C.ByteString -> StatMap
+makeStats content = statsMap
+      where tally0 :: (PidMap, StatMap)
+            tally0 = (M.empty, M.empty)
+            logEvents = mapMaybe parseLogEvent
+            (_tallyMap, statsMap) = foldl' tally tally0 $ logEvents ls
+            ls = C.lines content
+
 main :: IO ()
 main = do opts <- cmdArgsRun optsConfig
           content <- C.getContents
-          let ls = C.lines content
-          let (_tallyMap, statsMap) = foldl' tally tally0 $ logEvents ls
+          let statsMap = makeStats content
           let present = if (outputFormat opts==JSON) then presentActionsAsJSON else presentActions
           present statsMap
           return ()
-            where tally0 :: (PidMap, StatMap)
-                  tally0 = (M.empty, M.empty)
-                  logEvents = mapMaybe parseLogEvent
 
 
 tally :: (PidMap, StatMap) -> LogEvent -> (PidMap, StatMap)
