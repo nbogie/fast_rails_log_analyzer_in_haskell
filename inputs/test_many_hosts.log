@@ -1,0 +1,8 @@
+May 16 09:00:01 hostA procname[111]: Processing NinjasController#actionA to csv (for 123.234.213.231 at 2011-05-16 08:42:48) [PUT]
+May 16 09:00:02 hostB procname[111]: Processing NinjasController#actionB to csv (for 123.234.213.231 at 2011-05-16 08:42:48) [PUT]
+May 16 09:00:03 hostB procname[222]: Processing NinjasController#actionC to csv (for 123.234.213.231 at 2011-05-16 08:42:48) [PUT]
+May 16 09:00:04 hostA procname[222]: Processing NinjasController#actionD to csv (for 123.234.213.231 at 2011-05-16 08:42:48) [PUT]
+May 16 09:00:05 hostB procname[222]: Completed in 11ms (View: 1, DB: 1) | 200 OK [http://example.com/ninjas/someid.csv]
+May 16 09:00:06 hostB procname[111]: Completed in 22ms (View: 1, DB: 2) | 200 OK [http://example.com/ninjas/someid.csv]
+May 16 09:00:07 hostA procname[222]: Completed in 33ms (View: 1, DB: 3) | 200 OK [http://example.com/ninjas/someid.csv]
+May 16 09:00:08 hostA procname[111]: Completed in 44ms (View: 1, DB: 4) | 200 OK [http://example.com/ninjas/someid.csv]

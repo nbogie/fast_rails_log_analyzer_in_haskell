@@ -10,7 +10,7 @@ gotest= do ls <- linesOfFile fileNameForTest
            let l1 = head ls
            return $ extractCore l1
 
-fileNameForTest = "inputs/sensitive/100k_no_sev_201102_minimal.log"
+fileNameForTest = "inputs/test_many_hosts.log"
 
 example 0 = "Feb 10 06:53:40 host1 rails[28275]: local3.info<158>: Processing FooController#update to json (for 123.123.123.123 at 2011-02-10 06:53:40) [PUT] X-UniqueRequestId: 338304445520f73dd35499cf1351f2467ccc913c"
 example 1 = "Feb 10 06:53:41 host1 rails[28275]: local3.info<158>: Completed in 18ms (View: 1, DB: 4) | 200 OK [http://example.com/foo/bar.json?_method=put]"
