@@ -27,7 +27,7 @@ representing 700k requests)
 USAGE:
 ======
 # first, compile
-ghc --make -fforce-recomp -O2 Main.hs
+ghc --make -fforce-recomp -O2 -o Main RLA/Main.hs
 
 # process (uncompressed) log file:
 ./Main < myhugerailslogfile.log > report
