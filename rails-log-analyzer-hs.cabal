@@ -14,7 +14,6 @@ Executable: rails-log-analyzer-hs
 Build-depends:
   base == 4.2.0.0, 
   bytestring == 0.9.1.7, 
-  regex-posix == 0.94.4,
   cmdargs == 0.6.*,
   containers == 0.3.0.0,
   json == 0.4.4

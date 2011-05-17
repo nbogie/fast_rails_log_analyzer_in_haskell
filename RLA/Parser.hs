@@ -7,7 +7,6 @@ module RLA.Parser
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as C
-import Text.Regex.Posix
 -- import Data.List (isInfixOf)
 -- import Text.ParserCombinators.Parsec
 -- import Data.Time.Parse
@@ -49,14 +48,7 @@ extractDurationFast inputBS =
       in fmap fst $ C.readInt durStr 
 
 
-type LineMatch = (SomeString -> Bool)
 
-isCompleted :: LineMatch
-isCompleted s = s =~ "Completed "::Bool --lazy bytestring char8 has no isInfixOf
-
--- TODO: this field number may vary if there is no severity in the log format
-isProcessing :: LineMatch
-isProcessing s = C.pack "Processing" ==  C.words (C.take 90 s) !! severityFNum
 
 durationFNum = 5
 severityFNum = 7
