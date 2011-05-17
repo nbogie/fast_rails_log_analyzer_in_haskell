@@ -57,11 +57,11 @@ timestampWidth = 15
  
 parseLogEvent :: SomeString -> Maybe LogEvent
 parseLogEvent s = case extractCore s of
-      Just (timestamp, _hostname, pid, firstWord) 
+      Just (timestamp, hostname, pid, firstWord) 
                 | firstWord == C.pack "Processing" -> 
-                    fmap (\a -> Start timestamp pid a) $ extractAction s
+                    fmap (Start hostname timestamp pid) $ extractAction s
                 | firstWord == C.pack "Completed" -> 
-                    fmap (\d -> End timestamp pid d) $ extractDuration s
+                    fmap (End hostname timestamp pid) $ extractDuration s
                 | otherwise -> Nothing
       _ -> Nothing
 

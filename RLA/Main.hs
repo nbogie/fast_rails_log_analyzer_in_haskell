@@ -55,11 +55,11 @@ tally :: (PidMap, StatMap) -> LogEvent -> (PidMap, StatMap)
 
 -- Note: We should record an error here if the map already has 
 -- a start event recorded for this pid.
-tally (pidmap, statMap) ev@(Start _ pid _) = (pidmap', statMap) 
+tally (pidmap, statMap) ev@(Start hostname _ pid _) = (pidmap', statMap) 
                                  where pidmap' = M.insert pid ev pidmap
 
-tally (pidmap, statMap) ev@(End endTime pid duration) = case M.lookup pid pidmap of
-       Just (Start startTime _ action) -> 
+tally (pidmap, statMap) ev@(End hostname endTime pid duration) = case M.lookup pid pidmap of
+       Just (Start hostname startTime _ action) -> 
             case M.lookup action statMap of
               Just st -> (pidmap, statMap')
                 where 
@@ -72,7 +72,7 @@ tally (pidmap, statMap) ev@(End endTime pid duration) = case M.lookup pid pidmap
                 where 
                   pidmap' = M.delete pid pidmap
                   statMap' = M.insert action (newStats duration) statMap
-       Just (End _ _ _)                -> (pidmap, statMap) -- if there's already an end for this pid, do nothing (lenient)
+       Just (End _ _ _ _)                -> (pidmap, statMap) -- if there's already an end for this pid, do nothing (lenient)
        Nothing                         -> (pidmap, statMap)
 
 

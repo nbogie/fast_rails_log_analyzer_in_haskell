@@ -18,10 +18,10 @@ type Hostname = SomeString
 type Severity = SomeString
 
 -- in the log an action may start or end, on a given pid.
-data LogEvent = Start Timestamp Pid Action
-                | End Timestamp Pid Duration 
+data LogEvent = Start Hostname Timestamp Pid Action
+                | End Hostname Timestamp Pid Duration 
 
 instance Show LogEvent where
-  show (Start t p a) = "<<Start at " ++ C.unpack t ++ ", pid: "++ show p ++ ", action: "++showAction a ++ ">>"
-  show (End t p d) = "<<End at " ++ C.unpack t ++ ", pid: "++ show p ++ ", duration: "++show d ++ ">>"
+  show (Start h t p a) = "<<Start at " ++ C.unpack t ++ ", pid: "++ show p ++ ", action: "++showAction a ++ " on " ++ show h ++ ">>"
+  show (End h t p d) = "<<End at " ++ C.unpack t ++ ", pid: "++ show p ++ ", duration: "++show d ++ " on " ++ show h ++ ">>"
 
