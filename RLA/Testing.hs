@@ -4,34 +4,47 @@ import RLA.Parser
 import RLA.Types
 import RLA.Utils
 import RLA.Analyzer
+import RLA.Stats
 
 import Data.Maybe (mapMaybe)
 import qualified Data.Either as E
 import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.Map as M
-gotest= do ls <- linesOfFile fileNameForTest
-           let l1 = head ls
-           return $ extractCore l1
+gotest = 
+    do ls <- linesOfFile fileNameForTest
+       let l1 = head ls
+       return $ extractCore l1
 
 fileNameForTest = "inputs/test_many_hosts.log"
-
-simplifyKeys statMap = 
-  M.mapKeys f statMap
-    where f (ac, fmtM) = (C.unpack ac, fmap C.unpack fmtM)
 
 runTestManyHosts = do
   c <- C.readFile fileNameForTest
   let stats = simplifyKeys $ makeStats c
-  let failures = E.lefts $ map (\ch -> ensureEntry ("NinjasController#action"++[ch], "csv") stats) "ABCD"
-  putStrLn $ "FAILURES: \n" ++ unlines failures ++ "\nEND FAILURES"
+  let failures = E.lefts $ map (\(ch,dur) -> ensureEntry ("NinjasController#action"++[ch], "csv") (assertEqual maxDur dur "dur") stats) $ zip "ABCD" [44, 22, 11, 33]
+  if null failures
+    then putStrLn "All tests passed"
+    else putStrLn $ "FAILURES: \n" ++ unlines failures ++ "\nEND FAILURES"
   return stats
-    where
-      ensureEntry (ac, fmt) stats = 
-                  case M.lookup k stats of
-                    Just x -> Right $ "entry exists ok with key "++ show k
-                    Nothing -> Left $ "No entry found for key " ++ show k 
-                                       ++ ". Map has keys: "++ show (M.keys stats)
-                    where k = (ac, Just fmt)
+
+ensureEntry (ac, fmt) checkFn stats = 
+    case M.lookup k stats of
+      Just x -> 
+        case checkFn x of
+          Left e -> Left $ "Bad record for "++show k ++ ": "++ e
+          Right e -> Right $ "entry exists ok with key "++ show k
+      Nothing -> Left $ "No entry found for key " ++ show k 
+                         ++ ". Map has keys: "++ show (M.keys stats)
+      where k = (ac, Just fmt)
+
+
+
+assertEqual fn expected label st = 
+  if actual == expected 
+    then Right $ show label ++ "has expected value " ++ show expected
+    else Left $ "Wrong value for " ++ label ++ ". Expected "
+                ++ show expected ++ " but got "++show actual 
+                ++ ".  Record: "++show st
+    where actual = fn st
 
 
 example 0 = "Feb 10 06:53:40 host1 rails[28275]: local3.info<158>: Processing FooController#update to json (for 123.123.123.123 at 2011-02-10 06:53:40) [PUT] X-UniqueRequestId: 338304445520f73dd35499cf1351f2467ccc913c"
