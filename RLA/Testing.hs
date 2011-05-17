@@ -3,14 +3,36 @@ module RLA.Testing where
 import RLA.Parser
 import RLA.Types
 import RLA.Utils
+import RLA.Analyzer
 
 import Data.Maybe (mapMaybe)
+import qualified Data.Either as E
 import qualified Data.ByteString.Lazy.Char8 as C
+import qualified Data.Map as M
 gotest= do ls <- linesOfFile fileNameForTest
            let l1 = head ls
            return $ extractCore l1
 
 fileNameForTest = "inputs/test_many_hosts.log"
+
+simplifyKeys statMap = 
+  M.mapKeys f statMap
+    where f (ac, fmtM) = (C.unpack ac, fmap C.unpack fmtM)
+
+runTestManyHosts = do
+  c <- C.readFile fileNameForTest
+  let stats = simplifyKeys $ makeStats c
+  let failures = E.lefts $ map (\ch -> ensureEntry ("NinjasController#action"++[ch], "csv") stats) "ABCD"
+  putStrLn $ "FAILURES: \n" ++ unlines failures ++ "\nEND FAILURES"
+  return stats
+    where
+      ensureEntry (ac, fmt) stats = 
+                  case M.lookup k stats of
+                    Just x -> Right $ "entry exists ok with key "++ show k
+                    Nothing -> Left $ "No entry found for key " ++ show k 
+                                       ++ ". Map has keys: "++ show (M.keys stats)
+                    where k = (ac, Just fmt)
+
 
 example 0 = "Feb 10 06:53:40 host1 rails[28275]: local3.info<158>: Processing FooController#update to json (for 123.123.123.123 at 2011-02-10 06:53:40) [PUT] X-UniqueRequestId: 338304445520f73dd35499cf1351f2467ccc913c"
 example 1 = "Feb 10 06:53:41 host1 rails[28275]: local3.info<158>: Completed in 18ms (View: 1, DB: 4) | 200 OK [http://example.com/foo/bar.json?_method=put]"
