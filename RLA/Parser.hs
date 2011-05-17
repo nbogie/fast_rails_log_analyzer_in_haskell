@@ -53,7 +53,6 @@ extractDurationFast inputBS =
 logIncludesSeverity = True
 durationFNum           =  if logIncludesSeverity then 5 else 4
 numFieldsBeforeAction  =  if logIncludesSeverity then 4 else 3
-severityFNum = 7
 timestampWidth = 15
  
 parseLogEvent :: SomeString -> Maybe LogEvent
