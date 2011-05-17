@@ -50,7 +50,7 @@ extractDurationFast inputBS =
       in fmap fst $ C.readInt durStr 
 
 
-logIncludesSeverity = True
+logIncludesSeverity = False
 durationFNum           =  if logIncludesSeverity then 5 else 4
 numFieldsBeforeAction  =  if logIncludesSeverity then 4 else 3
 timestampWidth = 15
