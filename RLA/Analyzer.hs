@@ -16,9 +16,11 @@ import RLA.Stats (Stats, updateStats, newStats, statsToS)
 -- a rails event reconstituted from a start and end LogEvent
 data RailsEvent = RailsEvent Action Duration Pid Timestamp Timestamp deriving (Show)
 
-type PidMap = M.Map Pid LogEvent
+type PidMap = M.Map (Pid,C.ByteString) LogEvent
 type StatMap = M.Map Action Stats
 
+simplifyKeys statMap = M.mapKeys f statMap
+    where f (ac, fmtM) = (C.unpack ac, fmap C.unpack fmtM)
 
 makeStats :: C.ByteString -> StatMap
 makeStats content = statsMap
@@ -33,21 +35,21 @@ tally :: (PidMap, StatMap) -> LogEvent -> (PidMap, StatMap)
 -- Note: We should record an error here if the map already has 
 -- a start event recorded for this pid.
 tally (pidmap, statMap) ev@(Start hostname _ pid _) = (pidmap', statMap) 
-                                 where pidmap' = M.insert pid ev pidmap
+                                 where pidmap' = M.insert (pid,hostname) ev pidmap
 
-tally (pidmap, statMap) ev@(End hostname endTime pid duration) = case M.lookup pid pidmap of
+tally (pidmap, statMap) ev@(End hostname endTime pid duration) = case M.lookup (pid, hostname) pidmap of
        Just (Start hostname startTime _ action) -> 
             case M.lookup action statMap of
               Just st -> (pidmap, statMap')
                 where 
-                  pidmap' = M.delete pid pidmap
+                  pidmap' = M.delete (pid,hostname) pidmap
                   -- The following strictness is critical for mem usage
                   -- we want to insert the stat not a thunk of it
                   statMap' = stat' `seq` M.insert action stat' statMap
                   stat' = updateStats st duration
               Nothing -> (pidmap', statMap')
                 where 
-                  pidmap' = M.delete pid pidmap
+                  pidmap' = M.delete (pid,hostname) pidmap
                   statMap' = M.insert action (newStats duration) statMap
        Just (End _ _ _ _)                -> (pidmap, statMap) -- if there's already an end for this pid, do nothing (lenient)
        Nothing                         -> (pidmap, statMap)
