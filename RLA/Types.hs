@@ -1,15 +1,25 @@
+{-# LANGUAGE OverloadedStrings #-} 
 module RLA.Types where
 
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Aeson
 
 -- some protection against possible changes of string impl
 type SomeString = C.ByteString
 
 type Pid = Int
 
-type Action = (SomeString, Maybe Format)
-showAction (a, Just fmt) = C.unpack a ++ "."++C.unpack fmt
-showAction (a, Nothing) = C.unpack a
+data Action = Action SomeString (Maybe Format) deriving (Show, Ord, Eq)
+
+instance ToJSON Action where
+  toJSON s@(Action name maybeFmt) = 
+    object [ 
+        "action"  .= name
+      , "format"  .= maybeFmt
+      ]
+
+showAction (Action a (Just fmt)) = C.unpack a ++ "."++C.unpack fmt
+showAction (Action a Nothing) = C.unpack a
 
 type Format = SomeString -- format is json, csv, xml, etc.
 type Duration = Int
@@ -24,4 +34,3 @@ data LogEvent = Start Hostname Timestamp Pid Action
 instance Show LogEvent where
   show (Start h t p a) = "<<Start at " ++ C.unpack t ++ ", pid: "++ show p ++ ", action: "++showAction a ++ " on " ++ show h ++ ">>"
   show (End h t p d) = "<<End at " ++ C.unpack t ++ ", pid: "++ show p ++ ", duration: "++show d ++ " on " ++ show h ++ ">>"
-

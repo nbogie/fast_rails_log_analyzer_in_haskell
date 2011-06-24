@@ -1,8 +1,5 @@
 module RLA.Analyzer where
 
-import Text.JSON (encode)
-import Text.JSON.Generic (toJSON)
-
 import Text.Printf (printf)
 import Data.List (foldl')
 import Data.Maybe (mapMaybe)
@@ -12,6 +9,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import RLA.Types
 import RLA.Parser
 import RLA.Stats (Stats, updateStats, newStats, statsToS)
+import Data.Aeson
 
 -- a rails event reconstituted from a start and end LogEvent
 data RailsEvent = RailsEvent Action Duration Pid Timestamp Timestamp deriving (Show)
@@ -56,9 +54,9 @@ tally (pidmap, statMap) ev@(End hostname endTime pid duration) = case M.lookup (
 
 
 actionToS :: Action -> String
-actionToS action@(name,maybeFormat) = let n = C.unpack name
-                                          f= maybe "-" C.unpack maybeFormat
-                                      in printf "%-50s %-10s" n f
+actionToS action@(Action name maybeFormat) = let n = C.unpack name
+                                                 f = maybe "-" C.unpack maybeFormat
+                                             in printf "%-50s %-10s" n f
 
 
 presentActions :: StatMap -> IO ()
@@ -68,7 +66,9 @@ presentActions smap = putStrLn $ unlines $ header:body
                body = map putIt (M.assocs smap)
                putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
 
--- Note: Json will be missing stddev, as it just reflects Stats which doesn't carry it
+-- Note: Json will be missing stddev, 
+-- as it just reflects Stats which doesn't carry it
 presentActionsAsJSON :: StatMap -> IO ()
-presentActionsAsJSON smap = putStrLn $ encode $ toJSON (M.assocs smap)
+presentActionsAsJSON smap = do
+  putStrLn $ C.unpack $ encode (M.assocs smap)
 

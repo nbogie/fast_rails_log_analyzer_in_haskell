@@ -36,10 +36,10 @@ extractCoreWithRead input =
 -- The action will have its own copies of strings, not pointers into the bytestring.
 extractAction = extractActionFast
 -- TODO: handle case where the action cannot be parsed
-extractActionFast :: SomeString -> Maybe (SomeString, Maybe SomeString)
+extractActionFast :: SomeString -> Maybe Action
 extractActionFast inputBS = let (action:w2:w3:[]) = take 3 (drop numFieldsBeforeAction (C.words (C.drop (timestampWidth+1) inputBS)))
                                 format = if w2 == C.pack "to" then Just w3 else Nothing
-                            in Just (C.copy action, fmap C.copy format)
+                            in Just (Action (C.copy action) (fmap C.copy format))
 
 
 extractDuration = extractDurationFast
