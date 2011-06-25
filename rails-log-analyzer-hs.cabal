@@ -1,8 +1,10 @@
 Build-type:     Simple
 Name:           rails-log-analyzer-hs
-Version:        0.0.4
+Version:        0.0.5
 Synopsis:       Simple fast rails log analyzer 
-Description:    Simple, fast, brittle log analyzer for rails logs, akin to pl_analyze
+Description:    
+                Simple, fast, brittle log analyzer for rails logs, akin to 
+                pl_analyze.
 Homepage:       https://github.com/nbogie/fast_rails_log_analyzer_in_haskell
 Category:       Rails
 License:        MIT
@@ -15,12 +17,12 @@ Tested-with:    GHC ==6.12
 Cabal-version:  >= 1.6
 
 Build-depends:
-  base == 4.2.0.0, 
-  bytestring == 0.9.1.7, 
-  cmdargs == 0.6.*,
-  containers == 0.3.0.0,
-  aeson == 0.3.2.6
+  base        ==  4.2.0.0,
+  bytestring  ==  0.9.1.7,
+  cmdargs     ==  0.6.*,
+  containers  ==  0.3.0.0,
+  aeson       ==  0.3.2.6
 
 Executable:     rails-log-analyzer-hs
-Main-Is: RLA/Main.hs
-GHC-Options: -O2
+Main-Is:        RLA/Main.hs
+GHC-Options:    -O2 -Wall
