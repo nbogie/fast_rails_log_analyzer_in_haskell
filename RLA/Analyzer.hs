@@ -56,19 +56,21 @@ tally (pidmap, statMap) ev@(End hostname endTime pid duration) = case M.lookup (
 
 
 actionToS :: Action -> String
-actionToS action@(Action name maybeFormat) = let n = C.unpack name
-                                                 f = maybe "-" C.unpack maybeFormat
-                                             in printf "%-50s %-10s" n f
+actionToS action@(Action name maybeFormat) = 
+  let n = C.unpack name
+      f = maybe "-" C.unpack maybeFormat
+  in printf "%-50s %-10s" n f
 
 
 presentActions :: StatMap -> IO ()
-presentActions smap = putStrLn $ unlines $ header:body
-            where
-               header = printf "%-50s %-10s %10s %10s %10s %10s %10s %10s" 
-                               "Render Times Summary:" "Format" "Count" "Avg" 
-                               "Total" "Std Dev" "Min" "Max" 
-               body = map putIt $ sortStats (M.assocs smap)
-               putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
+presentActions smap = 
+  putStrLn $ unlines $ header:body
+    where
+      header = printf "%-50s %-10s %10s %10s %10s %10s %10s %10s" 
+                     "Render Times Summary:" "Format" "Count" "Avg" 
+                     "Total" "Std Dev" "Min" "Max" 
+      body = map putIt $ sortStats (M.assocs smap)
+      putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
 
 -- Note: Json will be missing stddev, 
 -- as it just reflects Stats which doesn't carry it
