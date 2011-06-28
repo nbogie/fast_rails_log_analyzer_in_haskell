@@ -11,20 +11,27 @@ import Data.Typeable
 import Data.Data
 --
 -- types for command-line args
-data Prog = Prog { outputFormat :: OutputFormat } deriving (Data, Typeable, Show)
-data OutputFormat = JSON | Plain deriving (Data, Typeable, Show, Eq)
+data Prog = Prog { outputFormat :: OutputFormat } 
+  deriving (Data, Typeable, Show)
+
+data OutputFormat = JSON | Plain 
+  deriving (Data, Typeable, Show, Eq)
 
 
 -- set up cmd-line arg parsing, defaults, help
-optsConfig = cmdArgsMode $ Prog { outputFormat = Plain 
-                &= help "Output format: JSON or Plain" } 
-              &= summary "Fast Rails Log Analyzer.  Parses from stdin."
+optsConfig = 
+  cmdArgsMode $ Prog { outputFormat = Plain 
+                        &= help "Output format: JSON or Plain" } 
+  &= summary "Fast Rails Log Analyzer.  Parses from stdin."
 
 main :: IO ()
-main = do opts <- cmdArgsRun optsConfig
-          content <- C.getContents
-          let statsMap = makeStats content
-          let present = if outputFormat opts==JSON then presentActionsAsJSON else presentActions
-          present statsMap
-          return ()
+main = do 
+  opts <- cmdArgsRun optsConfig
+  content <- C.getContents
+  let statsMap = makeStats content
+  let present = if outputFormat opts==JSON 
+                  then presentActionsAsJSON 
+                  else presentActions
+  present statsMap
+  return ()
 

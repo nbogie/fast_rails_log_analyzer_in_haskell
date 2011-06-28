@@ -13,22 +13,23 @@ import Text.Printf (printf)
 import Data.Typeable
 import Data.Data
 
-data Stats = Stats {   minDur :: !Duration -- ^ Minimum duration seen
-                   , maxDur :: !Duration -- ^ Maximum duration seen
-                   , count :: !Int       -- ^ Total number of occurrences
-                   , totalDurSquared :: !Integer -- ^ Sum of duration^2 of all occurrences 
-                                                 -- (This allows us to calculate stddev at end, 
-                                                 --  without second pass)
-                   , totalDur :: !Int -- ^ Sum of duration of all occurrences
-                 } deriving (Eq)
+data Stats = Stats 
+  { minDur           :: !Duration -- ^ Minimum duration seen
+  , maxDur           :: !Duration -- ^ Maximum duration seen
+  , count            :: !Int      -- ^ Total number of occurrences
+  , totalDurSquared  :: !Integer  -- ^ Sum of duration^2 of all occurrences 
+                                  -- (This allows us to calculate stddev at end,
+                                  --  without second pass)
+  , totalDur :: !Int              -- ^ Sum of duration of all occurrences
+ } deriving (Eq)
 
 instance ToJSON Stats where
   toJSON s@(Stats min max c tds td) = 
     object [ 
-        "minDur"  .= min
-      , "maxDur"  .= max
-      , "count"   .= c
-      , "average" .= (round(calcAvg s)::Integer)
+        "minDur"   .= min
+      , "maxDur"   .= max
+      , "count"    .= c
+      , "average"  .= (round(calcAvg s)::Integer)
       , "totalDur" .= td
       ]
 
@@ -49,29 +50,28 @@ calcStdDev s =
     where mean = calcAvg s
 
 newStats :: Duration -> Stats
-newStats d = Stats {
-              minDur = d 
-              , maxDur = d 
-              , count = 1
-              , totalDur = d
-              , totalDurSquared = fromIntegral (d * d) }
+newStats d = 
+  Stats { minDur = d 
+        , maxDur = d 
+        , count = 1
+        , totalDur = d
+        , totalDurSquared = fromIntegral (d * d)
+        }
 
 updateStats :: Stats -> Duration -> Stats
-updateStats st d = Stats { 
-      minDur = newMin
-      , maxDur = newMax
-      , count = count st + 1
-      , totalDur = newTotalDur
-      , totalDurSquared = newTotalDurSquared
-      }
-  where
-    newMin =  minimum [minDur st,d]
-    newMax =  maximum [maxDur st,d]
-    newTotalDur =  totalDur st + d
-    newTotalDurSquared =  totalDurSquared st + fromIntegral (d * d)
+updateStats st d = 
+  Stats { minDur = newMin
+        , maxDur = newMax
+        , count = count st + 1
+        , totalDur = newTotalDur
+        , totalDurSquared = newTotalDurSquared
+        }
+    where
+      newMin =  minimum [minDur st,d]
+      newMax =  maximum [maxDur st,d]
+      newTotalDur =  totalDur st + d
+      newTotalDurSquared =  totalDurSquared st + fromIntegral (d * d)
 
-
--- data Stats = Stats {minDur::Duration, maxDur::Duration, count::Int, totalDur::Int}
 statsToS :: Stats -> String
 statsToS s = let c = count s
                  mean = calcAvg s
@@ -80,4 +80,5 @@ statsToS s = let c = count s
                  sd = calcStdDev s
                  mn = minDur s
                  mx = maxDur s
-             in printf "%10d %10.0f %10d %10.1f %10d %10d" c (mean::Float) t (sd::Float) mn mx
+             in printf "%10d %10.0f %10d %10.1f %10d %10d" 
+                  c (mean::Float) t (sd::Float) mn mx

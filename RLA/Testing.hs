@@ -20,7 +20,9 @@ fileNameForTest = "inputs/test_many_hosts.log"
 runTestManyHosts = do
   c <- C.readFile fileNameForTest
   let stats = simplifyKeys $ makeStats c
-  let failures = E.lefts $ map (\(ch,dur) -> ensureEntry ("NinjasController#action"++[ch], "csv") (assertEqual maxDur dur "dur") stats) $ zip "ABCD" [44, 22, 11, 33]
+  let failures = E.lefts $ map f $ zip "ABCD" [44, 22, 11, 33]
+        where f (ch,dur) = ensureEntry ("NinjasController#action"++[ch], "csv")
+                            (assertEqual maxDur dur "dur") stats
   if null failures
     then putStrLn "All tests passed"
     else putStrLn $ "FAILURES: \n" ++ unlines failures ++ "\nEND FAILURES"

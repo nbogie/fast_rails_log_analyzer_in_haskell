@@ -9,16 +9,17 @@ type SomeString = C.ByteString
 
 type Pid = Int
 
-data Action = Action SomeString (Maybe Format) deriving (Show, Ord, Eq)
+data Action = Action SomeString (Maybe Format) 
+  deriving (Show, Ord, Eq)
 
 instance ToJSON Action where
   toJSON s@(Action name maybeFmt) = 
     object [ 
-        "action"  .= name
-      , "format"  .= maybeFmt
+        "action" .= name
+      , "format" .= maybeFmt
       ]
 
-showAction (Action a (Just fmt)) = C.unpack a ++ "."++C.unpack fmt
+showAction (Action a (Just fmt)) = C.unpack a ++ "." ++ C.unpack fmt
 showAction (Action a Nothing) = C.unpack a
 
 type Format = SomeString -- format is json, csv, xml, etc.
@@ -29,8 +30,12 @@ type Severity = SomeString
 
 -- in the log an action may start or end, on a given pid.
 data LogEvent = Start Hostname Timestamp Pid Action
-                | End Hostname Timestamp Pid Duration 
+              | End Hostname Timestamp Pid Duration 
 
 instance Show LogEvent where
-  show (Start h t p a) = "<<Start at " ++ C.unpack t ++ ", pid: "++ show p ++ ", action: "++showAction a ++ " on " ++ show h ++ ">>"
-  show (End h t p d) = "<<End at " ++ C.unpack t ++ ", pid: "++ show p ++ ", duration: "++show d ++ " on " ++ show h ++ ">>"
+  show (Start h t p a) =
+    "<<Start at " ++ C.unpack t ++ ", pid: " ++ show p 
+    ++ ", action: " ++ showAction a ++ " on " ++ show h ++ ">>"
+  show (End h t p d) = 
+    "<<End at " ++ C.unpack t ++ ", pid: " ++ show p 
+    ++ ", duration: " ++ show d ++ " on " ++ show h ++ ">>"

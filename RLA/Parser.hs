@@ -19,27 +19,32 @@ extractCore = extractCoreWithRead
 --  ^--timestamp--^ ^host       ^pid^   ^-sev/priority/-^ ^--message---...   
 extractCoreWithRead :: SomeString -> Maybe (Timestamp, Hostname, Pid, SomeString)
 extractCoreWithRead input = 
-      let timestamp=C.take timestampWidth input
-          (hostname, pidPlus, firstWord) = 
-            if logIncludesSeverity
-               then let (hostname:pidPlus:_severity:firstWord:_rest) = wordsAfterTimestamp in (hostname, pidPlus, firstWord)
-               else let (hostname:pidPlus:firstWord:_rest) = wordsAfterTimestamp in (hostname, pidPlus, firstWord)
-          wordsAfterTimestamp = C.words (C.drop (timestampWidth+1) input)
-          -- (pidStr, _afterPid)  = (C.break (== ']') (C.drop 14 pidPlus)) -- don't hardcode the length of the rails process
-          (pidStr, _afterPid) = C.break (==']') $ C.drop 1 $ snd $ C.break (=='[') pidPlus -- yuck FIXME
-      in case C.readInt pidStr of
-           Just (pid, _) -> Just (C.copy timestamp, C.copy hostname, pid, firstWord)
-           Nothing -> Nothing
+  let timestamp = C.take timestampWidth input
+      (hostname, pidPlus, firstWord) = 
+        if logIncludesSeverity
+          then let (host:pidPlus:_severity:firstWord:_rest) = wordsAfterTimestamp
+               in (host, pidPlus, firstWord)
+          else let (host:pidPlus:firstWord:_rest) = wordsAfterTimestamp 
+               in (host, pidPlus, firstWord)
+      wordsAfterTimestamp = C.words (C.drop (timestampWidth+1) input)
+      -- yuck: TODO
+      (pidStr, _afterPid) = C.break (==']') $ C.drop 1 $ snd $ C.break (=='[') pidPlus
+  in case C.readInt pidStr of
+       Just (pid, _) -> Just (C.copy timestamp, C.copy hostname, pid, firstWord)
+       Nothing -> Nothing
 
 
--- extract an action and an optional format.  may fail entirely, returning Nothing.
--- The action will have its own copies of strings, not pointers into the bytestring.
+-- Extract an action and an optional format.  May fail entirely: return Nothing.
+-- The action will have its own copies of strings, and not pointers into 
+-- the bytestring.
 extractAction = extractActionFast
 -- TODO: handle case where the action cannot be parsed
 extractActionFast :: SomeString -> Maybe Action
-extractActionFast inputBS = let (action:w2:w3:[]) = take 3 (drop numFieldsBeforeAction (C.words (C.drop (timestampWidth+1) inputBS)))
-                                format = if w2 == C.pack "to" then Just w3 else Nothing
-                            in Just (Action (C.copy action) (fmap C.copy format))
+extractActionFast inputBS = 
+  let (action:w2:w3:[]) = take 3 $ drop numFieldsBeforeAction fields
+      fields = C.words $ C.drop (timestampWidth+1) inputBS
+      format = if w2 == C.pack "to" then Just w3 else Nothing
+  in Just (Action (C.copy action) (fmap C.copy format))
 
 
 extractDuration = extractDurationFast
