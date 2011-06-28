@@ -1,14 +1,15 @@
 module RLA.Analyzer where
 
 import Text.Printf (printf)
-import Data.List (foldl')
+import Data.List (foldl', sortBy)
 import Data.Maybe (mapMaybe)
+import Data.Function (on)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.Char8 as C
 
 import RLA.Types
 import RLA.Parser
-import RLA.Stats (Stats, updateStats, newStats, statsToS)
+import RLA.Stats (Stats, updateStats, newStats, statsToS, totalDur)
 import Data.Aeson
 
 -- a rails event reconstituted from a start and end LogEvent
@@ -17,8 +18,9 @@ data RailsEvent = RailsEvent Action Duration Pid Timestamp Timestamp deriving (S
 type PidMap = M.Map (Pid,C.ByteString) LogEvent
 type StatMap = M.Map Action Stats
 
+simplifyKeys :: StatMap -> M.Map (String, Maybe String) Stats
 simplifyKeys statMap = M.mapKeys f statMap
-    where f (ac, fmtM) = (C.unpack ac, fmap C.unpack fmtM)
+    where f (Action ac fmtM) = (C.unpack ac, fmap C.unpack fmtM)
 
 makeStats :: C.ByteString -> StatMap
 makeStats content = statsMap
@@ -62,13 +64,16 @@ actionToS action@(Action name maybeFormat) = let n = C.unpack name
 presentActions :: StatMap -> IO ()
 presentActions smap = putStrLn $ unlines $ header:body
             where
-               header = printf "%-50s %-10s %10s %10s %10s %10s %10s" "Render Times Summary:" "Format" "Count" "Avg" "Std Dev" "Min" "Max" 
-               body = map putIt (M.assocs smap)
+               header = printf "%-50s %-10s %10s %10s %10s %10s %10s %10s" 
+                               "Render Times Summary:" "Format" "Count" "Avg" 
+                               "Total" "Std Dev" "Min" "Max" 
+               body = map putIt $ sortStats (M.assocs smap)
                putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
 
 -- Note: Json will be missing stddev, 
 -- as it just reflects Stats which doesn't carry it
 presentActionsAsJSON :: StatMap -> IO ()
 presentActionsAsJSON smap = do
-  putStrLn $ C.unpack $ encode (M.assocs smap)
+  putStrLn $ C.unpack $ encode $ sortStats (M.assocs smap)
 
+sortStats = reverse . sortBy (compare `on` totalDur . snd) 

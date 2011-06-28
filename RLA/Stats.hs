@@ -76,7 +76,8 @@ statsToS :: Stats -> String
 statsToS s = let c = count s
                  mean = calcAvg s
                  -- stdev = sqrt((sum_x2 / n) - (mean * mean))
+                 t  = totalDur s
                  sd = calcStdDev s
                  mn = minDur s
                  mx = maxDur s
-             in printf "%10d %10.0f %10.1f %10d %10d" c (mean::Float) (sd::Float) mn mx
+             in printf "%10d %10.0f %10d %10.1f %10d %10d" c (mean::Float) t (sd::Float) mn mx
