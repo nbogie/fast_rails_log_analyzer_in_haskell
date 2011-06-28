@@ -1,0 +1,13 @@
+[
+  {
+     "action":"Api::V1::NinjasController#dispatch",
+     "format":"xml"
+     "stats" : {
+       "minDur":54,
+       "maxDur":266,
+       "count":10,
+       "totalDurSquared":248439,
+       "totalDur":1329
+     }
+  }
+]
