@@ -41,5 +41,4 @@ mainNormal = do
 mainAlt :: IO ()
 mainAlt  = do
   les <- fmap parseContents C.getContents
-  let revs = consolidate les
-  mapM_ print revs
+  consolidateDirty les
