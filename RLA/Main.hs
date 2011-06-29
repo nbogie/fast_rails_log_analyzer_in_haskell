@@ -25,7 +25,9 @@ optsConfig =
   &= summary "Fast Rails Log Analyzer.  Parses from stdin."
 
 main :: IO ()
-main = do 
+main = mainAlt 
+
+mainNormal = do 
   opts <- cmdArgsRun optsConfig
   content <- C.getContents
   let statsMap = makeStats content
@@ -35,3 +37,9 @@ main = do
   present statsMap
   return ()
 
+mainAlt :: IO ()
+mainAlt  = do
+  les <- fmap parseContents C.getContents
+  let revs = consolidate les
+  mapM print revs
+  return ()

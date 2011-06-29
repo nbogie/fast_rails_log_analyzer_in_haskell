@@ -15,7 +15,10 @@ import Data.Aeson
 -- a rails event reconstituted from a start and end LogEvent
 data RailsEvent = 
   RailsEvent Action Duration Pid Timestamp Timestamp 
-  deriving (Show)
+
+instance Show RailsEvent where
+  show (RailsEvent ac dur pid start stop) = 
+    C.unpack stop ++ " " ++ show ac ++ " - " ++ " " ++ show dur 
 
 type PidMap = M.Map (Pid,C.ByteString) LogEvent
 type StatMap = M.Map Action Stats
@@ -91,3 +94,27 @@ presentActionsAsJSON smap = do
 
 sortStats ::  [(a, Stats)] -> [(a, Stats)]
 sortStats = reverse . sortBy (compare `on` totalDur . snd)
+
+parseContents ::  C.ByteString -> [LogEvent]
+parseContents c = mapMaybe parseLogEvent $ C.lines c
+
+consolidate :: [LogEvent] -> [RailsEvent]
+consolidate les = finalEvs
+  where 
+    (_finalMap, finalEvs) = foldl' f (M.empty, []) les
+    f :: (PidMap, [RailsEvent]) -> LogEvent -> (PidMap, [RailsEvent])
+    f (pidmap, evs) ev@(Start hostname _ pid _) = 
+      (pidmap', evs) 
+        where pidmap' = M.insert (pid,hostname) ev pidmap
+
+    f (pidmap, evs) _ev@(End hostname endTime pid duration) = 
+      case M.lookup (pid, hostname) pidmap of
+        Just (Start xhostname startTime _ action) -> 
+          (pidmap', evs')
+            where 
+              pidmap' = M.delete (pid,hostname) pidmap
+              -- todo: yuck
+              evs' = evs ++ [newev]
+              newev = RailsEvent action duration pid startTime endTime 
+        -- if there's already an end for this pid, do nothing (lenient)
+        _other                                   -> (pidmap, evs) 

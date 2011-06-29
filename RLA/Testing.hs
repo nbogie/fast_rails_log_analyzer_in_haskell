@@ -17,6 +17,13 @@ gotest =
 
 fileNameForTest = "inputs/test_many_hosts.log"
 
+testConsolidation = do
+  c <- C.readFile fileNameForTest
+  let les = mapMaybe parseLogEvent $ C.lines c
+  let revs = consolidate les
+  print revs
+  return revs
+
 runTestManyHosts = do
   c <- C.readFile fileNameForTest
   let stats = simplifyKeys $ makeStats c

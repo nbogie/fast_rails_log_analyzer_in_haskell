@@ -10,7 +10,10 @@ type SomeString = C.ByteString
 type Pid = Int
 
 data Action = Action SomeString (Maybe Format) 
-  deriving (Show, Ord, Eq)
+  deriving (Ord, Eq)
+
+instance Show Action where
+  show (Action ac fmtMaybe) = C.unpack ac ++ " " ++ maybe "-" C.unpack fmtMaybe
 
 instance ToJSON Action where
   toJSON s@(Action name maybeFmt) = 
