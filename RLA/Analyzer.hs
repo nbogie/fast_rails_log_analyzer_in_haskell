@@ -17,7 +17,7 @@ data RailsEvent =
   RailsEvent Action Duration Pid Timestamp Timestamp 
 
 instance Show RailsEvent where
-  show (RailsEvent ac dur pid start stop) = 
+  show (RailsEvent ac dur _pid _start stop) = 
     C.unpack stop ++ " " ++ show ac ++ " - " ++ " " ++ show dur 
 
 type PidMap = M.Map (Pid,C.ByteString) LogEvent
@@ -98,18 +98,22 @@ sortStats = reverse . sortBy (compare `on` totalDur . snd)
 parseContents ::  C.ByteString -> [LogEvent]
 parseContents c = mapMaybe parseLogEvent $ C.lines c
 
+-- TODO: Have this be lazy.  We can't store the whole lot in memory
+-- during the fold!
 consolidate :: [LogEvent] -> [RailsEvent]
 consolidate les = finalEvs
   where 
     (_finalMap, finalEvs) = foldl' f (M.empty, []) les
+
     f :: (PidMap, [RailsEvent]) -> LogEvent -> (PidMap, [RailsEvent])
+
     f (pidmap, evs) ev@(Start hostname _ pid _) = 
       (pidmap', evs) 
         where pidmap' = M.insert (pid,hostname) ev pidmap
 
     f (pidmap, evs) _ev@(End hostname endTime pid duration) = 
       case M.lookup (pid, hostname) pidmap of
-        Just (Start xhostname startTime _ action) -> 
+        Just (Start _hostname startTime _ action) -> 
           (pidmap', evs')
             where 
               pidmap' = M.delete (pid,hostname) pidmap

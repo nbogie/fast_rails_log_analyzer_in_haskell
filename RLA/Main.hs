@@ -27,6 +27,7 @@ optsConfig =
 main :: IO ()
 main = mainAlt 
 
+mainNormal ::  IO ()
 mainNormal = do 
   opts <- cmdArgsRun optsConfig
   content <- C.getContents
@@ -41,5 +42,4 @@ mainAlt :: IO ()
 mainAlt  = do
   les <- fmap parseContents C.getContents
   let revs = consolidate les
-  mapM print revs
-  return ()
+  mapM_ print revs
