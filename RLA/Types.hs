@@ -13,12 +13,13 @@ data Action = Action SomeString (Maybe Format)
   deriving (Show, Ord, Eq)
 
 instance ToJSON Action where
-  toJSON s@(Action name maybeFmt) = 
+  toJSON (Action name maybeFmt) = 
     object [ 
         "action" .= name
       , "format" .= maybeFmt
       ]
 
+showAction ::  Action -> String
 showAction (Action a (Just fmt)) = C.unpack a ++ "." ++ C.unpack fmt
 showAction (Action a Nothing) = C.unpack a
 

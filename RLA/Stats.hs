@@ -3,15 +3,10 @@ module RLA.Stats where
 
 import RLA.Types
 
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad (mzero)
 import Data.Aeson
-import qualified Data.Aeson.Types as T
+--import qualified Data.Aeson.Types as T
 
 import Text.Printf (printf)
--- for translation to json
-import Data.Typeable
-import Data.Data
 
 data Stats = Stats 
   { minDur           :: !Duration -- ^ Minimum duration seen
@@ -24,10 +19,10 @@ data Stats = Stats
  } deriving (Eq)
 
 instance ToJSON Stats where
-  toJSON s@(Stats min max c tds td) = 
+  toJSON s@(Stats mn mx c _tds td) = 
     object [ 
-        "minDur"   .= min
-      , "maxDur"   .= max
+        "minDur"   .= mn
+      , "maxDur"   .= mx
       , "count"    .= c
       , "average"  .= (round(calcAvg s)::Integer)
       , "totalDur" .= td
@@ -39,11 +34,12 @@ instance Show Stats where
              ++ " tot: " ++ show (totalDur s)
              ++ " totDurSquared: " ++ show (totalDurSquared s)
              ++ " count: " ++ show (count s)
-             ++ " avg: " ++ show (round (calcAvg s))
+             ++ " avg: " ++ show (round (calcAvg s)::Integer)
 
 calcAvg ::  Stats -> Float
 calcAvg s = fromIntegral (totalDur s) / fromIntegral (count s)
 
+calcStdDev ::  Stats -> Float
 calcStdDev s = 
   sqrt ((fromIntegral (totalDurSquared s ) / fromIntegral (count s)) 
     - (mean*mean))

@@ -13,6 +13,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import RLA.Types
 
 -- we may change this to extractCoreWithParsec, or other impl
+extractCore :: SomeString -> Maybe (Timestamp, Hostname, Pid, SomeString)
 extractCore = extractCoreWithRead
 
 -- "Feb 10 06:53:40 host1 rails[28275]: local3.info<158>: Processing ..."
@@ -22,10 +23,10 @@ extractCoreWithRead input =
   let timestamp = C.take timestampWidth input
       (hostname, pidPlus, firstWord) = 
         if logIncludesSeverity
-          then let (host:pidPlus:_severity:firstWord:_rest) = wordsAfterTimestamp
-               in (host, pidPlus, firstWord)
-          else let (host:pidPlus:firstWord:_rest) = wordsAfterTimestamp 
-               in (host, pidPlus, firstWord)
+          then let (host:pidPl:_severity:firstW:_rest) = wordsAfterTimestamp
+               in (host, pidPl, firstW)
+          else let (host:pidPl:firstW:_rest) = wordsAfterTimestamp 
+               in (host, pidPl, firstW)
       wordsAfterTimestamp = C.words (C.drop (timestampWidth+1) input)
       -- yuck: TODO
       (pidStr, _afterPid) = C.break (==']') $ C.drop 1 $ snd $ C.break (=='[') pidPlus
@@ -37,6 +38,7 @@ extractCoreWithRead input =
 -- Extract an action and an optional format.  May fail entirely: return Nothing.
 -- The action will have its own copies of strings, and not pointers into 
 -- the bytestring.
+extractAction ::  SomeString -> Maybe Action
 extractAction = extractActionFast
 -- TODO: handle case where the action cannot be parsed
 extractActionFast :: SomeString -> Maybe Action
@@ -47,6 +49,7 @@ extractActionFast inputBS =
   in Just (Action (C.copy action) (fmap C.copy format))
 
 
+extractDuration ::  SomeString -> Maybe Duration
 extractDuration = extractDurationFast
 
 extractDurationFast :: SomeString -> Maybe Duration
@@ -55,8 +58,11 @@ extractDurationFast inputBS =
       in fmap fst $ C.readInt durStr 
 
 
+logIncludesSeverity ::  Bool
 logIncludesSeverity = False
+durationFNum ::  Int
 durationFNum           =  if logIncludesSeverity then 5 else 4
+numFieldsBeforeAction ::  Int
 numFieldsBeforeAction  =  if logIncludesSeverity then 4 else 3
 timestampWidth = 15
  
