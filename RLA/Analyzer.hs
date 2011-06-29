@@ -25,6 +25,7 @@ simplifyKeys statMap =
   M.mapKeys f statMap
     where f (Action ac fmtM) = (C.unpack ac, fmap C.unpack fmtM)
 
+
 makeStats :: C.ByteString -> StatMap
 makeStats content = 
   statsMap
@@ -43,13 +44,15 @@ tally (pidmap, statMap) ev@(Start hostname _ pid _) =
   (pidmap', statMap) 
     where pidmap' = M.insert (pid,hostname) ev pidmap
 
-tally (pidmap, statMap) ev@(End hostname endTime pid duration) = 
+tally (pidmap, statMap) _ev@(End hostname _endTime pid duration) = 
   case M.lookup (pid, hostname) pidmap of
-    Just (Start hostname startTime _ action) -> 
+    Just (Start _hostname _startTime _ action) -> 
       case M.lookup action statMap of
+        -- TODO: should be pidmap' - with this deleted.  More work but slightly 
+        -- smaller footprint, depending on how many pids we get through
         Just st -> (pidmap, statMap')
           where 
-            pidmap' = M.delete (pid,hostname) pidmap
+            _pidmap' = M.delete (pid,hostname) pidmap
             -- The following strictness is critical for mem usage
             -- we want to insert the stat not a thunk of it
             statMap' = stat' `seq` M.insert action stat' statMap
@@ -64,7 +67,7 @@ tally (pidmap, statMap) ev@(End hostname endTime pid duration) =
 
 
 actionToS :: Action -> String
-actionToS action@(Action name maybeFormat) = 
+actionToS (Action name maybeFormat) = 
   let n = C.unpack name
       f = maybe "-" C.unpack maybeFormat
   in printf "%-50s %-10s" n f
@@ -86,4 +89,5 @@ presentActionsAsJSON :: StatMap -> IO ()
 presentActionsAsJSON smap = do
   putStrLn $ C.unpack $ encode $ sortStats (M.assocs smap)
 
-sortStats = reverse . sortBy (compare `on` totalDur . snd) 
+sortStats ::  [(a, Stats)] -> [(a, Stats)]
+sortStats = reverse . sortBy (compare `on` totalDur . snd)
