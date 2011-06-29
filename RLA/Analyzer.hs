@@ -100,19 +100,38 @@ parseContents c = mapMaybe parseLogEvent $ C.lines c
 
 consolidateDirty :: [LogEvent] -> IO ()
 consolidateDirty levs = con levs M.empty
+  where
+    con :: [LogEvent] -> PidMap -> IO ()
+    con [] _ = return ()
 
-con :: [LogEvent] -> PidMap -> IO ()
-con [] _ = return ()
+    con (ev@(Start hostname _ pid _):xs) pidmap = 
+      con xs (M.insert (pid,hostname) ev pidmap)
 
-con (ev@(Start hostname _ pid _):xs) pidmap = 
-  con xs (M.insert (pid,hostname) ev pidmap)
+    con (_ev@(End hostname endTime pid duration):xs) pidmap = 
+      case M.lookup (pid, hostname) pidmap of
+        Just (Start _hostname startTime _ action) -> do
+          print $ RailsEvent action duration pid startTime endTime 
+          con xs (M.delete (pid,hostname) pidmap)
+        _other                                   -> con xs pidmap
 
-con (ev@(End hostname endTime pid duration):xs) pidmap = 
-  case M.lookup (pid, hostname) pidmap of
-    Just (Start _hostname startTime _ action) -> do
-      print $ RailsEvent action duration pid startTime endTime 
-      con xs (M.delete (pid,hostname) pidmap)
-    _other                                   -> con xs pidmap
+consolidateNew :: [LogEvent] -> [RailsEvent]
+consolidateNew levs = con levs M.empty
+  where
+    con :: [LogEvent] -> PidMap -> [RailsEvent]
+    con [] _ = []
+
+    con (ev@(Start hostname _ pid _):xs) pidmap = 
+      con xs (M.insert (pid,hostname) ev pidmap)
+
+    con (_ev@(End hostname endTime pid duration):xs) pidmap = 
+      case M.lookup (pid, hostname) pidmap of
+        Just (Start _hostname startTime _ action) -> 
+          railsEv : rest
+            where
+              railsEv = RailsEvent action duration pid startTime endTime 
+              rest = con xs (M.delete (pid,hostname) pidmap)
+        _other                                   -> con xs pidmap
+
 
 -- TODO: Have this be lazy.  We can't store the whole lot in memory
 -- during the fold!

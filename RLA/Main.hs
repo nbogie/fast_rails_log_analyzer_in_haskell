@@ -25,7 +25,7 @@ optsConfig =
   &= summary "Fast Rails Log Analyzer.  Parses from stdin."
 
 main :: IO ()
-main = mainAlt 
+main = mainNew 
 
 mainNormal ::  IO ()
 mainNormal = do 
@@ -37,6 +37,14 @@ mainNormal = do
                   else presentActions
   present statsMap
   return ()
+
+mainNew :: IO ()
+mainNew  = do
+  les <- fmap parseContents C.getContents
+  let revs = consolidateNew les
+  mapM_ print $ filter f revs
+    where f :: RailsEvent -> Bool
+          f (RailsEvent _ac dur _p _st _et) = dur > 1000
 
 mainAlt :: IO ()
 mainAlt  = do
