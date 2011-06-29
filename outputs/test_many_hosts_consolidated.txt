@@ -1,0 +1,4 @@
+2011-05-16 08:42:48 NinjasController#actionA PUT csv 123.234.213.231 44 1 4
+2011-05-16 08:42:48 NinjasController#actionB PUT csv 123.234.213.231 22 1 2
+2011-05-16 08:42:48 NinjasController#actionC PUT csv 123.234.213.231 11 1 1
+2011-05-16 08:42:48 NinjasController#actionD PUT csv 123.234.213.231 33 1 3
