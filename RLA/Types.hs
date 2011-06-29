@@ -16,12 +16,13 @@ instance Show Action where
   show (Action ac fmtMaybe) = C.unpack ac ++ " " ++ maybe "-" C.unpack fmtMaybe
 
 instance ToJSON Action where
-  toJSON s@(Action name maybeFmt) = 
+  toJSON (Action name maybeFmt) = 
     object [ 
         "action" .= name
       , "format" .= maybeFmt
       ]
 
+showAction ::  Action -> String
 showAction (Action a (Just fmt)) = C.unpack a ++ "." ++ C.unpack fmt
 showAction (Action a Nothing) = C.unpack a
 
