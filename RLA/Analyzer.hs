@@ -98,24 +98,8 @@ sortStats = reverse . sortBy (compare `on` totalDur . snd)
 parseContents ::  C.ByteString -> [LogEvent]
 parseContents c = mapMaybe parseLogEvent $ C.lines c
 
-consolidateDirty :: [LogEvent] -> IO ()
-consolidateDirty levs = con levs M.empty
-  where
-    con :: [LogEvent] -> PidMap -> IO ()
-    con [] _ = return ()
-
-    con (ev@(Start hostname _ pid _):xs) pidmap = 
-      con xs (M.insert (pid,hostname) ev pidmap)
-
-    con (_ev@(End hostname endTime pid duration):xs) pidmap = 
-      case M.lookup (pid, hostname) pidmap of
-        Just (Start _hostname startTime _ action) -> do
-          print $ RailsEvent action duration pid startTime endTime 
-          con xs (M.delete (pid,hostname) pidmap)
-        _other                                   -> con xs pidmap
-
-consolidateNew :: [LogEvent] -> [RailsEvent]
-consolidateNew levs = con levs M.empty
+consolidate :: [LogEvent] -> [RailsEvent]
+consolidate levs = con levs M.empty
   where
     con :: [LogEvent] -> PidMap -> [RailsEvent]
     con [] _ = []
@@ -127,33 +111,8 @@ consolidateNew levs = con levs M.empty
       case M.lookup (pid, hostname) pidmap of
         Just (Start _hostname startTime _ action) -> 
           railsEv : rest
+          -- railsEv `seq` (railsEv : rest)
             where
               railsEv = RailsEvent action duration pid startTime endTime 
               rest = con xs (M.delete (pid,hostname) pidmap)
         _other                                   -> con xs pidmap
-
-
--- TODO: Have this be lazy.  We can't store the whole lot in memory
--- during the fold!
-consolidate :: [LogEvent] -> [RailsEvent]
-consolidate les = finalEvs
-  where 
-    (_finalMap, finalEvs) = foldl' f (M.empty, []) les
-
-    f :: (PidMap, [RailsEvent]) -> LogEvent -> (PidMap, [RailsEvent])
-
-    f (pidmap, evs) ev@(Start hostname _ pid _) = 
-      (pidmap', evs) 
-        where pidmap' = M.insert (pid,hostname) ev pidmap
-
-    f (pidmap, evs) _ev@(End hostname endTime pid duration) = 
-      case M.lookup (pid, hostname) pidmap of
-        Just (Start _hostname startTime _ action) -> 
-          (pidmap', evs')
-            where 
-              pidmap' = M.delete (pid,hostname) pidmap
-              -- todo: yuck
-              evs' = evs ++ [newev]
-              newev = RailsEvent action duration pid startTime endTime 
-        -- if there's already an end for this pid, do nothing (lenient)
-        _other                                   -> (pidmap, evs) 

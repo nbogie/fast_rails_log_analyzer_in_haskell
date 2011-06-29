@@ -41,12 +41,7 @@ mainNormal = do
 mainNew :: IO ()
 mainNew  = do
   les <- fmap parseContents C.getContents
-  let revs = consolidateNew les
+  let revs = consolidate les
   mapM_ print $ filter f revs
     where f :: RailsEvent -> Bool
           f (RailsEvent _ac dur _p _st _et) = dur > 1000
-
-mainAlt :: IO ()
-mainAlt  = do
-  les <- fmap parseContents C.getContents
-  consolidateDirty les
