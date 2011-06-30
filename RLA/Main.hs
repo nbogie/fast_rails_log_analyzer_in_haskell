@@ -25,7 +25,7 @@ optsConfig =
   &= summary "Fast Rails Log Analyzer.  Parses from stdin."
 
 main :: IO ()
-main = mainNew 
+main = mainNormal
 
 mainNormal ::  IO ()
 mainNormal = do 

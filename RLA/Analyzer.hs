@@ -33,48 +33,31 @@ makeStats :: C.ByteString -> StatMap
 makeStats content = 
   statsMap
     where 
-      tally0 :: (PidMap, StatMap)
-      tally0 = (M.empty, M.empty)
+      tally0 :: StatMap
+      tally0 = M.empty
       logEvents = mapMaybe parseLogEvent
-      (_tallyMap, statsMap) = foldl' tally tally0 $ logEvents ls
+      railsEvents = consolidate . logEvents
+      statsMap = foldl' tally tally0 $ railsEvents ls
       ls = C.lines content
-
-tally :: (PidMap, StatMap) -> LogEvent -> (PidMap, StatMap)
-
--- Note: We should record an error here if the map already has 
--- a start event recorded for this pid.
-tally (pidmap, statMap) ev@(Start hostname _ pid _) = 
-  (pidmap', statMap) 
-    where pidmap' = M.insert (pid,hostname) ev pidmap
-
-tally (pidmap, statMap) _ev@(End hostname _endTime pid duration) = 
-  case M.lookup (pid, hostname) pidmap of
-    Just (Start _hostname _startTime _ action) -> 
-      case M.lookup action statMap of
-        -- TODO: should be pidmap' - with this deleted.  More work but slightly 
-        -- smaller footprint, depending on how many pids we get through
-        Just st -> (pidmap, statMap')
-          where 
-            _pidmap' = M.delete (pid,hostname) pidmap
-            -- The following strictness is critical for mem usage
-            -- we want to insert the stat not a thunk of it
-            statMap' = stat' `seq` M.insert action stat' statMap
-            stat' = updateStats st duration
-        Nothing -> (pidmap', statMap')
-          where 
-            pidmap' = M.delete (pid,hostname) pidmap
-            statMap' = M.insert action (newStats duration) statMap
-    -- if there's already an end for this pid, do nothing (lenient)
-    Just (End _ _ _ _)                       -> (pidmap, statMap) 
-    Nothing                                  -> (pidmap, statMap)
-
+  
+tally :: M.Map Action Stats -> RailsEvent -> M.Map Action Stats
+tally statMap _ev@(RailsEvent action duration _pid _start _stop) =
+  case M.lookup action statMap of
+    Just st -> statMap'
+      where 
+        -- The following strictness is critical for mem usage
+        -- we want to insert the stat not a thunk of it
+        statMap' = stat' `seq` M.insert action stat' statMap
+        stat' = updateStats st duration
+    Nothing -> statMap'
+      where 
+        statMap' = M.insert action (newStats duration) statMap
 
 actionToS :: Action -> String
 actionToS (Action name maybeFormat) = 
   let n = C.unpack name
       f = maybe "-" C.unpack maybeFormat
   in printf "%-50s %-10s" n f
-
 
 presentActions :: StatMap -> IO ()
 presentActions smap = 
