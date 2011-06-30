@@ -27,15 +27,17 @@ representing 700k requests)
 USAGE:
 ======
 # first, compile
-ghc --make -fforce-recomp -O2 -o Main RLA/Main.hs
-
+cabal configure && cabal build && cabal install
 # process (uncompressed) log file:
-./Main < myhugerailslogfile.log > report
+./rails-log-analyzer-hs < myhugerailslogfile.log > report
 # process compressed log file: 
-zcat myhugerailslogfile.log.gz | ./Main > report
+zcat myhugerailslogfile.log.gz | ./rails-log-analyzer-hs > report
 
 # output to json instead of plain text (exact format liable to change)
-./Main -o json < myhugerailslogfile.log > report
+./rails-log-analyzer-hs -o json < myhugerailslogfile.log > report
+
+# Consolidate to simpler log file (experimental), also filtering on req duration
+./rails-log-analyzer-hs --mode=Consolidate --threshold=2000 < myhugerailslogfile.log > worst_events.log 
 
 TODO: 
 =====
