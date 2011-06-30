@@ -57,7 +57,6 @@ extractDurationFast inputBS =
       let durStr = C.words (C.drop (timestampWidth + 1) inputBS) !! durationFNum
       in fmap fst $ C.readInt durStr 
 
-
 logIncludesSeverity ::  Bool
 logIncludesSeverity = False
 durationFNum ::  Int
@@ -75,4 +74,3 @@ parseLogEvent s = case extractCore s of
                     fmap (End hostname timestamp pid) $ extractDuration s
                 | otherwise -> Nothing
       _ -> Nothing
-
