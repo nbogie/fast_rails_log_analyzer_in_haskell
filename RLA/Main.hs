@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable #-} --For CmdArgs
 module Main where
 
 import RLA.Analyzer

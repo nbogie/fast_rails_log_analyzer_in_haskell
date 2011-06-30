@@ -3,7 +3,7 @@ module RLA.Analyzer where
 import Text.Printf (printf)
 import Data.List (foldl', sortBy)
 import Data.Maybe (mapMaybe)
-import Data.Function (on)
+import Data.Ord (comparing)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.Char8 as C
 
@@ -72,11 +72,11 @@ presentActions smap =
 -- Note: Json will be missing stddev, 
 -- as it just reflects Stats which doesn't carry it
 presentActionsAsJSON :: StatMap -> IO ()
-presentActionsAsJSON smap = do
+presentActionsAsJSON smap = 
   putStrLn $ C.unpack $ encode $ sortStats (M.assocs smap)
 
 sortStats ::  [(a, Stats)] -> [(a, Stats)]
-sortStats = reverse . sortBy (compare `on` totalDur . snd)
+sortStats = reverse . sortBy (comparing (totalDur . snd))
 
 parseContents ::  C.ByteString -> [LogEvent]
 parseContents c = mapMaybe parseLogEvent $ C.lines c
