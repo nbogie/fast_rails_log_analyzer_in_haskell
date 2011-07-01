@@ -20,7 +20,7 @@ instance Show RailsEvent where
   show (RailsEvent ac dur _pid _start stop) = 
     C.unpack stop ++ " " ++ show ac ++ " - " ++ " " ++ show dur 
 
-type PidMap = M.Map (Pid,C.ByteString) LogEvent
+type PidMap = M.Map (Pid,Hostname) LogEvent
 type StatMap = M.Map Action Stats
 
 simplifyKeys :: StatMap -> M.Map (String, Maybe String) Stats
@@ -31,14 +31,10 @@ simplifyKeys statMap =
 
 makeStats :: C.ByteString -> StatMap
 makeStats content = 
-  statsMap
+  foldl' tally M.empty $ makeRailsEvents $ C.lines content
     where 
-      tally0 :: StatMap
-      tally0 = M.empty
       logEvents = mapMaybe parseLogEvent
-      railsEvents = consolidate . logEvents
-      statsMap = foldl' tally tally0 $ railsEvents ls
-      ls = C.lines content
+      makeRailsEvents = consolidate . logEvents
   
 tally :: M.Map Action Stats -> RailsEvent -> M.Map Action Stats
 tally statMap _ev@(RailsEvent action duration _pid _start _stop) =
