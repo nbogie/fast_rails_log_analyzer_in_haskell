@@ -14,6 +14,7 @@ import Data.Data
 data Prog = Prog 
             { outputFormat :: OutputFormat
             , mode :: ProgMode
+            , outDir :: Maybe FilePath
             , threshold :: Int
             }
   deriving (Data, Typeable, Show)
@@ -28,7 +29,8 @@ optsConfig =
                        &= help "Program mode: Analyze or Consolidate"
                      , outputFormat = Plain 
                        &= help "Output format: JSON or Plain"
-                     , threshold = 1000 
+                     , outDir = Nothing &= help "Output dir for reports"
+                     , threshold = 0 
                        &= help "Threshold ms (for consolidation filter)"
                      } 
   &= summary "Fast Rails Log Analyzer.  Parses from stdin."
@@ -47,8 +49,12 @@ mainAnalyze opts = do
   let statsMap = makeStats content
   let present = if outputFormat opts == JSON 
                   then presentActionsAsJSON 
-                  else presentActions
-  present statsMap
+                  else presentActionsAsString
+  case outDir opts of
+    Nothing -> putStrLn $ present statsMap
+    Just dir -> do
+      writeReports statsMap dir
+      putStrLn $ "Reports written into " ++ dir
 
 -- consolidate the rails Processing/Completed line pairs into single line events
 mainConsolidate :: Prog -> IO ()

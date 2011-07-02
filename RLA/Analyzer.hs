@@ -9,8 +9,9 @@ import qualified Data.ByteString.Lazy.Char8 as C
 
 import RLA.Types
 import RLA.Parser
-import RLA.Stats (Stats, updateStats, newStats, statsToS, totalDur)
+import RLA.Stats (Stats, updateStats, newStats, statsToS, totalDur, count, minDur, maxDur)
 import Data.Aeson
+import System.Directory (createDirectoryIfMissing)
 
 -- a rails event reconstituted from a start and end LogEvent
 data RailsEvent = 
@@ -27,7 +28,6 @@ simplifyKeys :: StatMap -> M.Map (String, Maybe String) Stats
 simplifyKeys statMap = 
   M.mapKeys f statMap
     where f (Action ac fmtM) = (C.unpack ac, fmap C.unpack fmtM)
-
 
 makeStats :: C.ByteString -> StatMap
 makeStats content = 
@@ -55,24 +55,39 @@ actionToS (Action name maybeFormat) =
       f = maybe "-" C.unpack maybeFormat
   in printf "%-50s %-10s" n f
 
-presentActions :: StatMap -> IO ()
-presentActions smap = 
-  putStrLn $ unlines $ header:body
+writeReports :: StatMap -> FilePath -> IO ()
+writeReports statMap dir = do
+  createDirectoryIfMissing True dir
+  writeFile (dir ++ "/report.json") (presentActionsAsJSON statMap)
+  mapM_ repToFile [ (totalDur, "totalDuration")
+                  , (minDur, "minTime")
+                  , (maxDur, "maxTime")
+                  , (count, "numRequests") ]
+    where 
+      repToFile (sf, n) = 
+        writeFile fname $ presentActionsBy sf statMap
+          where fname = dir ++ "/" ++ n ++ ".txt"
+
+presentActionsAsJSON :: StatMap -> String
+presentActionsAsJSON smap = 
+  C.unpack $ encode $ sortStats totalDur (M.assocs smap)
+
+presentActionsAsString :: StatMap -> String
+presentActionsAsString smap = presentActionsBy totalDur smap
+
+presentActionsBy :: (Ord c) => (Stats -> c) -> M.Map Action Stats -> String
+presentActionsBy f smap = 
+  unlines $ header:body
     where
       header = printf "%-50s %-10s %10s %10s %10s %10s %10s %10s" 
                      "Render Times Summary:" "Format" "Count" "Avg" 
                      "Total" "Std Dev" "Min" "Max" 
-      body = map putIt $ sortStats (M.assocs smap)
+      body = map putIt $ sortStats f (M.assocs smap)
       putIt (action, stats) = actionToS action ++ " " ++ statsToS stats
 
--- Note: Json will be missing stddev, 
--- as it just reflects Stats which doesn't carry it
-presentActionsAsJSON :: StatMap -> IO ()
-presentActionsAsJSON smap = 
-  putStrLn $ C.unpack $ encode $ sortStats (M.assocs smap)
-
-sortStats ::  [(a, Stats)] -> [(a, Stats)]
-sortStats = reverse . sortBy (comparing (totalDur . snd))
+-- sortStats ::  [(a, Stats)] -> [(a, Stats)]
+sortStats ::  (Ord c) => (b -> c) -> [(a, b)] -> [(a, b)]
+sortStats f = reverse . sortBy (comparing (f . snd))
 
 parseContents ::  C.ByteString -> [LogEvent]
 parseContents c = mapMaybe parseLogEvent $ C.lines c
