@@ -35,6 +35,7 @@ type Severity = SomeString
 -- in the log an action may start or end, on a given pid.
 data LogEvent = Start Hostname Timestamp Pid Action
               | End Hostname Timestamp Pid Duration 
+  deriving (Eq)
 
 instance Show LogEvent where
   show (Start h t p a) =
