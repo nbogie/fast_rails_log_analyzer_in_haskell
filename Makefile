@@ -1,5 +1,5 @@
 PROG  = Main
-SOURCES = Types.hs Stats.hs Parser.hs Main.hs
+SOURCES = Types.hs Stats.hs Parser.hs Main.hs Analyzer.hs Testing.hs DemoHelp.hs
 
 $(PROG) : $(SOURCES)
 	$(HC) --make $< -o $@ $(HCFLAGS)
