@@ -28,7 +28,6 @@ demoConsolidation = do
   print revs
   return revs
 
-
 runTestManyHosts = do
   c <- C.readFile fileNameForTest
   let stats = simplifyKeys $ makeStats c
@@ -99,9 +98,23 @@ testParseWithActionNoFormat =
       res = extractAction $ C.pack inp
       expected = Just $ mkActionNoFmt "BazController#update"
       inp = "Feb 10 06:53:41 host1 rails[28275]: local3.info<158>: Processing BazController#update (for 123.123.123.123 at 2011-02-10 06:53:41) [PUT] X-UniqueRequestId: 6f98a508e66ce328effdb6be47330fa0857c57dd"
-testParseBadLines = TestList [ testParseBadLineEmpty
-                             ]
+testParseBadLines = 
+  "Parse bad lines" ~: 
+    TestList  [ testParseBadLineEmpty
+              , testParseBadLineEmptyAfterTimestamp
+    ]
 
 testParseBadLineEmpty = 
-  TestCase $ assertEqual "Parse bad line" Nothing res
-    where res = extractAction $ C.pack ""
+  "empty" ~: TestCase $ assertEqual "Parse bad line" Nothing res
+    where res = parseLogEvent $ C.pack ""
+
+testParseBadLineEmptyAfterTimestamp = 
+  "empty after timestamp" ~: 
+    TestList [ "Parse line empty after timestamp" ~: Nothing ~?= (try "Feb 10 06:53:41")
+             , f "Feb 10 06:53:41 host1 rails[28275]: local3.info<158>: P"
+             , f "Feb 10 06:53:41 host1 rails[28275]: "
+             , f "Feb 10 06:53:41 host1 rails[28275]:"
+             , f "Feb 10 06:53:41 host1 rails[28275]"
+            ]
+    where try inpStr = parseLogEvent $ C.pack inpStr
+          f inpStr = ("in: "++inpStr) ~: Nothing ~?= try inpStr
