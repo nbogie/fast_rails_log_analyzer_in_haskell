@@ -28,16 +28,24 @@ USAGE:
 ======
 # first, compile
 cabal configure && cabal build && cabal install
+
 # process (uncompressed) log file:
 ./rails-log-analyzer-hs < myhugerailslogfile.log > report
+
 # process compressed log file: 
 zcat myhugerailslogfile.log.gz | ./rails-log-analyzer-hs > report
 
 # output to json instead of plain text (exact format liable to change)
 ./rails-log-analyzer-hs -o json < myhugerailslogfile.log > report
 
+# Output various format reports of the analyses to a directory 
+# rather than a single one to stdout.
+# This is useful if you want both json and text reports in one pass.
+./rails-log-analyzer-hs --outdir=/tmp/myreports < myhugerailslogfile.log
+
 # Consolidate to simpler log file (experimental), also filtering on req duration
 ./rails-log-analyzer-hs --mode=Consolidate --threshold=2000 < myhugerailslogfile.log > worst_events.log 
+
 
 TODO: 
 =====

@@ -1,6 +1,6 @@
 Build-type:     Simple
 Name:           rails-log-analyzer-hs
-Version:        0.0.6
+Version:        0.0.7
 Synopsis:       Simple fast rails log analyzer 
 Description:    
                 Simple, fast, brittle log analyzer for rails logs, akin to 
