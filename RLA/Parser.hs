@@ -40,14 +40,16 @@ extractCoreWithRead input =
 -- the bytestring.
 extractAction ::  SomeString -> Maybe Action
 extractAction = extractActionFast
--- TODO: handle case where the action cannot be parsed
+
 extractActionFast :: SomeString -> Maybe Action
 extractActionFast inputBS = 
-  let (action:w2:w3:[]) = take 3 $ drop numFieldsBeforeAction fields
-      fields = C.words $ C.drop (timestampWidth+1) inputBS
-      format = if w2 == C.pack "to" then Just w3 else Nothing
-  in Just (Action (C.copy action) (fmap C.copy format))
-
+  case take 3 $ drop numFieldsBeforeAction fields of
+    (action:w2:w3:[]) ->  Just (Action (C.copy action) (fmap C.copy format))
+        where 
+          format = if w2 == C.pack "to" then Just w3 else Nothing
+    _ -> Nothing -- Unexpected line fmt
+  where 
+    fields = C.words $ C.drop (timestampWidth+1) inputBS
 
 extractDuration ::  SomeString -> Maybe Duration
 extractDuration = extractDurationFast
@@ -58,7 +60,7 @@ extractDurationFast inputBS =
       in fmap fst $ C.readInt durStr 
 
 logIncludesSeverity ::  Bool
-logIncludesSeverity = False
+logIncludesSeverity = True
 durationFNum ::  Int
 durationFNum           =  if logIncludesSeverity then 5 else 4
 numFieldsBeforeAction ::  Int
