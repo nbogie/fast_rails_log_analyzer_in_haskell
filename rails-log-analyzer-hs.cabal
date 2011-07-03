@@ -21,7 +21,8 @@ Build-depends:
   bytestring  ==  0.9.1.7,
   cmdargs     ==  0.6.*,
   containers  ==  0.3.0.0,
-  aeson       ==  0.3.2.6
+  aeson       ==  0.3.2.6,
+  directory   ==  1.0.1.0
 
 Executable:     rails-log-analyzer-hs
 Main-Is:        RLA/Main.hs
