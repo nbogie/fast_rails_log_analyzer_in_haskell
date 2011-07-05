@@ -29,14 +29,14 @@ makeStats content =
       makeRailsEvents = consolidate . logEvents
   
 tally :: M.Map Action Stats -> RailsEvent -> M.Map Action Stats
-tally statMap _ev@(RailsEvent action duration _pid _start _stop) =
+tally statMap ev@(RailsEvent action duration _pid _start _stop) =
   case M.lookup action statMap of
     Just st -> statMap'
       where 
         -- The following strictness is critical for mem usage
         -- we want to insert the stat not a thunk of it
         statMap' = stat' `seq` M.insert action stat' statMap
-        stat' = updateStats st duration
+        stat' = updateStats st ev
     Nothing -> statMap'
       where 
         statMap' = M.insert action (newStats duration) statMap

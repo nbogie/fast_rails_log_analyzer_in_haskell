@@ -5,12 +5,14 @@ import RLA.Types
 
 import Data.Aeson
 --import qualified Data.Aeson.Types as T
-
+import Data.List (insertBy)
+import Data.Ord (comparing)
 import Text.Printf (printf)
 
 data Stats = Stats 
   { minDur           :: !Duration -- ^ Minimum duration seen
   , maxDur           :: !Duration -- ^ Maximum duration seen
+  , worst            :: ![RailsEvent] -- ^ worst events
   , count            :: !Int      -- ^ Total number of occurrences
   , totalDurSquared  :: !Integer  -- ^ Sum of duration^2 of all occurrences 
                                   -- (This allows us to calculate stddev at end,
@@ -19,7 +21,7 @@ data Stats = Stats
  } deriving (Eq)
 
 instance ToJSON Stats where
-  toJSON s@(Stats mn mx c _tds td) = 
+  toJSON s@(Stats mn mx _worst c _tds td) = 
     object [ 
         "minDur"   .= mn
       , "maxDur"   .= mx
@@ -49,15 +51,17 @@ newStats :: Duration -> Stats
 newStats d = 
   Stats { minDur = d 
         , maxDur = d 
+        , worst = []
         , count = 1
         , totalDur = d
         , totalDurSquared = fromIntegral (d * d)
         }
 
-updateStats :: Stats -> Duration -> Stats
-updateStats st d = 
+updateStats :: Stats -> RailsEvent -> Stats
+updateStats st ev@(RailsEvent _ac d _pid _start _stop)= 
   Stats { minDur = newMin
         , maxDur = newMax
+        , worst = reverse $ take 4 $ reverse $ insertBy (comparing revDuration) ev $ worst st
         , count = count st + 1
         , totalDur = newTotalDur
         , totalDurSquared = newTotalDurSquared
@@ -76,5 +80,6 @@ statsToS s = let c = count s
                  sd = calcStdDev s
                  mn = minDur s
                  mx = maxDur s
-             in printf "%10d %10.0f %10d %10.1f %10d %10d" 
-                  c (mean::Float) t (sd::Float) mn mx
+                 ws = unlines $ map show $ reverse $ worst s
+             in printf "%10d %10.0f %10d %10.1f %10d %10d\n%s" 
+                  c (mean::Float) t (sd::Float) mn mx ws
