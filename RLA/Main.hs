@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-} --For CmdArgs
 module Main where
 
+import RLA.Types
 import RLA.Analyzer
 
 import qualified Data.ByteString.Lazy.Char8 as C

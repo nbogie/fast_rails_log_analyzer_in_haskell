@@ -44,3 +44,16 @@ instance Show LogEvent where
   show (End h t p d) = 
     "<<End at " ++ C.unpack t ++ ", pid: " ++ show p 
     ++ ", duration: " ++ show d ++ " on " ++ show h ++ ">>"
+
+-- a rails event reconstituted from a start and end LogEvent
+data RailsEvent = 
+  RailsEvent Action Duration Pid Timestamp Timestamp 
+  deriving (Eq)
+
+revDuration :: RailsEvent -> Duration
+revDuration (RailsEvent _ d _ _ _) = d
+
+instance Show RailsEvent where
+  show (RailsEvent ac dur _pid _start stop) = 
+    C.unpack stop ++ " " ++ show ac ++ " - " ++ " " ++ show dur
+

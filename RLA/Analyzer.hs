@@ -13,14 +13,6 @@ import RLA.Stats (Stats, updateStats, newStats, statsToS, totalDur, count, minDu
 import Data.Aeson
 import System.Directory (createDirectoryIfMissing)
 
--- a rails event reconstituted from a start and end LogEvent
-data RailsEvent = 
-  RailsEvent Action Duration Pid Timestamp Timestamp 
-
-instance Show RailsEvent where
-  show (RailsEvent ac dur _pid _start stop) = 
-    C.unpack stop ++ " " ++ show ac ++ " - " ++ " " ++ show dur 
-
 type PidMap = M.Map (Pid,Hostname) LogEvent
 type StatMap = M.Map Action Stats
 
