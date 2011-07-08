@@ -3,6 +3,7 @@ module Main where
 
 import RLA.Types
 import RLA.Analyzer
+import RLA.Stats2
 
 import qualified Data.ByteString.Lazy.Char8 as C
 import System.Console.CmdArgs (cmdArgsMode, cmdArgsRun, (&=), summary, help)
@@ -20,7 +21,8 @@ data Prog = Prog
             }
   deriving (Data, Typeable, Show)
 
-data ProgMode = Analyze | Consolidate deriving (Data, Typeable, Show, Eq)
+data ProgMode = Analyze | Consolidate | Histogram 
+  deriving (Data, Typeable, Show, Eq)
 
 data OutputFormat = JSON | Plain deriving (Data, Typeable, Show, Eq)
 
@@ -41,6 +43,7 @@ main = do
   opts <- cmdArgsRun optsConfig
   case mode opts of
     Analyze -> mainAnalyze opts
+    Histogram -> mainHistogram opts
     Consolidate -> mainConsolidate opts
 
 -- Analyze the rails log into stats, like pl_analyze
@@ -56,6 +59,16 @@ mainAnalyze opts = do
     Just dir -> do
       writeReports statsMap dir
       putStrLn $ "Reports written into " ++ dir
+--
+-- Analyze the rails log into stats, like pl_analyze
+mainHistogram ::  Prog -> IO ()
+mainHistogram opts = do
+  les <- fmap parseContents C.getContents
+  let revs = consolidate les
+  let durs = map revDuration revs
+  let output = makeBinnedText 50 durs
+  putStrLn output
+
 
 -- consolidate the rails Processing/Completed line pairs into single line events
 mainConsolidate :: Prog -> IO ()
