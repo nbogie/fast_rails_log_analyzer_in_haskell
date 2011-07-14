@@ -4,17 +4,11 @@ import qualified Data.Map as M
 import Data.List (sortBy)
 
 cdf ::  [Int] -> [Double]
-cdf xs = decorate $ accum xs
+cdf xs = decorate $ tail $ scanl (+) 0 xs
   where
     decorate :: [Int] -> [Double]
     decorate ys = map (\x -> fromIntegral x / fromIntegral tot) ys
     tot = sum xs
-    accum ::  (Num a) => [a] -> [a]
-    accum xs = accum' xs 0
-      where
-        accum' [] n = []
-        accum' (x:xs) n = (x+n) : accum' xs (x+n)
-
 
 testdata = [ 99,40,99,201,0,249,99 ]
 expected = [ (0,2), (50,3), (200,2) ]
