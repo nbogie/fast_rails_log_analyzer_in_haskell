@@ -22,14 +22,15 @@ data Prog = Prog
   deriving (Data, Typeable, Show)
 
 data ProgMode = Analyze | Consolidate | Histogram 
-  deriving (Data, Typeable, Show, Eq)
+  deriving (Data, Typeable, Show, Eq, Enum, Bounded)
 
 data OutputFormat = JSON | Plain deriving (Data, Typeable, Show, Eq)
 
 -- set up cmd-line arg parsing, defaults, help
 optsConfig = 
   cmdArgsMode $ Prog { mode = Analyze 
-                       &= help "Program mode: Analyze or Consolidate"
+                       &= help ("Program mode.  One of: " ++ 
+                                show [Analyze .. Histogram])
                      , outputFormat = Plain 
                        &= help "Output format: JSON or Plain"
                      , outDir = Nothing &= help "Output dir for reports"
