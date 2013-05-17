@@ -8,10 +8,10 @@ It is currently VERY fussy about the log format.
 
 WARNING: This is the work of a haskell newbie and contains many examples of the
 WRONG way to do things.
-In particular, the log parsing is almost certainly better done with a standard 
-parsing library from haskell (such as parsec) for flexibility and robustness. 
+In particular, the log parsing wouldcertainly be better done with a standard 
+parsing library from haskell (such as parsec or attoparsec), for flexibility and robustness. 
 (I found parsec significantly slower but haven't yet investigated if that's my 
-fault).
+fault.  Attoparsec would be a faster option).
 
 Nevertheless, if you are prepared to tweak the parser to your log format, it is 
 fast enough to be useful over the common ruby tools.
